@@ -27,15 +27,10 @@ def get_db(username, password, account, warehouse, role):
     return db, con
 
 
-st.set_page_config(page_title="Snow-wise", page_icon="❄️")
-with st.container():
-    col1, col2 = st.columns([4, 20])
-    with col1:
-        st.image("assets/snowy.png", width=100)
-    with col2:
-        st.title(":blue[Snow-wise Agent]")
+st.set_page_config(page_title="Snow-Wise", page_icon="❄️")
+st.title("❄️ :blue[Snow-Wise]")
 
-st.write('Your go-to-assistant for monitoring and optimizing Snowflake queries :rocket:')
+st.write('AI agent to monitor & optimize Snowflake queries :rocket:')
 
 with st.sidebar:
     st.title('Your Secrets')
