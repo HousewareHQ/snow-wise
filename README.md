@@ -1,6 +1,4 @@
-# ❄️ Snow-wise Agent
-
-Your go-to AI Agent for monitoring and optimizing Snowflake queries!
+# ❄️ Snow-Wise: AI agent to monitor & optimize Snowflake queries
 
 ## Inspiration
 
