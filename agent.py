@@ -28,9 +28,11 @@ class Agent:
             - Criteria for "most expensive" can be based on execution time or data scanned.
         2. Analyze Query Structure
             - For each identified query, determine the tables being referenced in it and then get the schemas of these tables to under their structure.
+            - To fetch the clustering information for any table, you can use this Snowflake function: `SELECT SYSTEM$CLUSTERING_INFORMATION(<table_name>)`
         3. Suggest Optimizations
             - With the above context in mind, analyze the query logic to identify potential improvements.
             - Provide clear reasoning for each suggested optimization, specifying which metric (e.g., execution time, data scanned) the optimization aims to improve.
+            - If the query can benefit from pruning with the existing clustering keys, then you can suggest that as an optimization.
         4. Validate Improvements
             - Run the original and optimized queries to compare performance metrics.
             - Ensure the output data of the optimized query matches the original query to verify correctness.
