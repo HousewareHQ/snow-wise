@@ -15,7 +15,7 @@ class _InfoSQLDatabaseToolInput(BaseModel):
     table_names: str = Field(
         ...,
         description=(
-            "A comma-separated list of the table names for which to return the schema. "
+            "A comma-separated list of the table or view names for which to return the definition. "
             "Example input: 'table1, table2, table3'"
         ),
     )
@@ -25,7 +25,7 @@ class InfoSnowflakeTableTool(BaseTool):
     """Tool for getting metadata about a SQL database."""
 
     name: str = "sql_db_schema"
-    description: str = "Get the schema and sample rows for the specified SQL tables."
+    description: str = "Get the definition and sample rows for the specified SQL tables."
     args_schema: Type[BaseModel] = _InfoSQLDatabaseToolInput
 
     db: SQLDatabase = Field(exclude=True)
@@ -35,13 +35,13 @@ class InfoSnowflakeTableTool(BaseTool):
         table_names: str,
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
-        """Get the schema for tables in a comma-separated list."""
-        output_schema = ""
+        """Get the definition for tables and views in a comma-separated list."""
+        output_ddl = ""
         _table_names = table_names.split(",")
         for t in _table_names:
-            schema = self.db.run(f"DESCRIBE TABLE {t}")
-            output_schema += f"Schema for table {t}: {schema}\n"
-        return output_schema
+            ddl = self.db.run(f"SELECT GET_DDL('TABLE', '{t}');")
+            output_ddl += f"Definition for {t}: {ddl}\n"
+        return output_ddl
 
 
 class _QuerySQLCheckerToolInput(BaseModel):
@@ -84,7 +84,7 @@ class QuerySQLCheckerTool(BaseTool):
     ) -> str:
         """Use the LLM to check the query."""
         escaped_query = query.replace('"', '\\"').replace("'", "\\'")
-        prompt=self.template.format(query=escaped_query, dialect=self.db.dialect)
+        prompt = self.template.format(query=escaped_query, dialect=self.db.dialect)
         query = f"SELECT SNOWFLAKE.CORTEX.COMPLETE('snowflake-arctic', '{prompt}');"
         return self.db.run(query)
 
@@ -142,8 +142,8 @@ class AgentToolkit(BaseToolkit):
     def get_tools(self) -> List[BaseTool]:
         """Get the tools in the toolkit."""
         info_sql_database_tool_description = (
-            "Input to this tool is a comma-separated list of tables, output is the "
-            "schema and sample rows for those tables. "
+            "Input to this tool is a comma-separated list of tables or views, output is the "
+            "definition and sample rows for those tables/views. "
             "Example Input: table1, table2, table3"
         )
         info_sql_database_tool = InfoSnowflakeTableTool(
