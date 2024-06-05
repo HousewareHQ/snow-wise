@@ -3,7 +3,6 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.language_models.base import BaseLanguageModel
 from langchain.agents import create_openai_functions_agent
 from langchain_community.utilities import SQLDatabase
-from snowflake.connector import SnowflakeConnection
 
 from toolkit import AgentToolkit
 
@@ -12,8 +11,8 @@ class Agent:
 
     agent_executor: AgentExecutor
 
-    def __init__(self, db: SQLDatabase, llm: BaseLanguageModel, con: SnowflakeConnection):
-        toolkit = AgentToolkit(llm=llm, db=db, con=con)
+    def __init__(self, db: SQLDatabase, llm: BaseLanguageModel):
+        toolkit = AgentToolkit(llm=llm, db=db)
         tools = toolkit.get_tools()
 
         system_message = """

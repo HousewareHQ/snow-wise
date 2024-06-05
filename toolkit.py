@@ -7,7 +7,6 @@ from langchain_community.utilities.sql_database import SQLDatabase
 from langchain_core.callbacks import (
     CallbackManagerForToolRun,
 )
-from snowflake.connector import SnowflakeConnection
 from sqlalchemy.engine import Result
 
 
@@ -104,7 +103,7 @@ class QuerySQLDataBaseTool(BaseTool):
     """
     args_schema: Type[BaseModel] = _QuerySQLDataBaseToolInput
 
-    con: SnowflakeConnection = Field(exclude=True)
+    db: SQLDatabase = Field(exclude=True)
 
     def _run(
         self,
@@ -113,10 +112,9 @@ class QuerySQLDataBaseTool(BaseTool):
     ) -> Tuple[Union[str, Sequence[Dict[str, Any]], Result], Optional[str]]:
         """Execute the query, return the results and query_id; or an error message."""
         try:
-            cursor = self.con.cursor()
-            results = cursor.execute(query).fetchall()
-            query_id = cursor.sfqid
-            cursor.close()
+            cursor_wrapper = self.db.run(query, fetch='cursor')
+            query_id = cursor_wrapper.cursor.sfqid
+            results = cursor_wrapper.fetchall()
             return results, query_id
         except Exception as e:
             return f"Error: {e}", None
@@ -127,7 +125,6 @@ class AgentToolkit(BaseToolkit):
 
     db: SQLDatabase = Field(exclude=True)
     llm: BaseLanguageModel = Field(exclude=True)
-    con: SnowflakeConnection = Field(exclude=True)
 
     @property
     def dialect(self) -> str:
@@ -158,7 +155,7 @@ class AgentToolkit(BaseToolkit):
             "to query the correct table fields."
         )
         query_sql_database_tool = QuerySQLDataBaseTool(
-            con=self.con, description=query_sql_database_tool_description
+            db=self.db, description=query_sql_database_tool_description
         )
         query_sql_checker_tool_description = (
             "Use this tool to double check if your query is correct before executing "

@@ -2,7 +2,6 @@ from langchain_community.callbacks.streamlit import StreamlitCallbackHandler
 from langchain_openai import ChatOpenAI
 from langchain_community.utilities import SQLDatabase
 
-import snowflake.connector
 import streamlit as st
 
 from agent import Agent
@@ -14,17 +13,7 @@ def get_db(username, password, account, warehouse, role):
     schema = "ACCOUNT_USAGE"
     snowflake_uri = f"snowflake://{username}:{password}@{account}/{database}/{schema}?warehouse={warehouse}&role={role}"
     db = SQLDatabase.from_uri(snowflake_uri, view_support=True)
-    # refactor TODO: relying on snowflake-connector cursor for retrieving query_ids
-    con = snowflake.connector.connect(
-        user=username,
-        password=password,
-        account=account,
-        database=database,
-        schema=schema,
-        warehouse=warehouse,
-        role=role,
-    )
-    return db, con
+    return db
 
 
 st.set_page_config(page_title="Snow-Wise", page_icon="❄️")
@@ -44,14 +33,14 @@ with st.sidebar:
 
     if openai_api_key and snowflake_account and snowflake_username and snowflake_role and snowflake_password and snowflake_warehouse:
         llm = ChatOpenAI(model="gpt-4o", temperature=0, streaming=True, api_key=openai_api_key)
-        db, con = get_db(
+        db = get_db(
             username=snowflake_username,
             password=snowflake_password,
             account=snowflake_account,
             warehouse=snowflake_warehouse,
             role=snowflake_role,
         )
-        agent_executor = Agent(db=db, llm=llm, con=con).get_executor()
+        agent_executor = Agent(db=db, llm=llm).get_executor()
 
 
 if "messages" not in st.session_state:
