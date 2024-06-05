@@ -26,7 +26,7 @@ class Agent:
             - For a given date range (default: last 7 days), identify the top 20 most expensive `SELECT` queries using the `SNOWFLAKE`.`ACCOUNT_USAGE`.`QUERY_HISTORY` view.
             - Criteria for "most expensive" can be based on execution time or data scanned.
         2. Analyze Query Structure
-            - For each identified query, determine the tables being referenced in it and then get the schemas of these tables to understand their structure.
+            - For each identified query, determine the tables and views being referenced in it and then get the definitions of these objects to understand their structure.
             - To fetch the clustering information for any table, you can use this Snowflake function: `SELECT SYSTEM$CLUSTERING_INFORMATION(<table_name>)`
         3. Suggest Optimizations
             - With the above context in mind, analyze the query logic to identify potential improvements.
